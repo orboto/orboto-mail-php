@@ -227,4 +227,4 @@ MIT (see [LICENSE.md](LICENSE.md)). The PHP SDK is open-source; the OMS API back
 
 - Docs: <https://mail.orboto.io>
 - Customer portal: <https://account.orboto.io/mail>
-- Issues: <https://github.com/orboto/orboto-mail-service/issues>
+- Issues: <https://github.com/orboto/orboto-mail-php/issues>
