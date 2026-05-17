@@ -1,0 +1,71 @@
+{
+  "name": "orboto/mail",
+  "description": "Official PHP SDK for the Orboto Mail Service. Drop-in transactional-mail client with auto-quota-tracking, retry-with-backoff, quota lifecycle events, typed DTOs, and a Laravel Service-Provider out of the box. EU-hosted, GDPR-compliant.",
+  "license": "MIT",
+  "type": "library",
+  "keywords": [
+    "transactional-email",
+    "smtp",
+    "ses",
+    "gdpr",
+    "laravel",
+    "orboto"
+  ],
+  "homepage": "https://mail.orboto.io",
+  "support": {
+    "issues": "https://github.com/orboto/orboto-mail-service/issues",
+    "source": "https://github.com/orboto/orboto-mail-service/tree/develop/packages/sdk-php"
+  },
+  "require": {
+    "php": "^8.2",
+    "psr/http-client": "^1.0",
+    "psr/http-factory": "^1.0",
+    "psr/http-message": "^1.1 || ^2.0",
+    "php-http/discovery": "^1.19"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0",
+    "guzzlehttp/guzzle": "^7.8",
+    "guzzlehttp/psr7": "^2.7",
+    "phpstan/phpstan": "^1.11",
+    "illuminate/contracts": "^11.0",
+    "illuminate/notifications": "^11.0"
+  },
+  "suggest": {
+    "guzzlehttp/guzzle": "Default PSR-18 HTTP client (any PSR-18 implementation works)",
+    "illuminate/support": "Required when using the Laravel Service-Provider (Laravel 11+)"
+  },
+  "autoload": {
+    "psr-4": {
+      "Orboto\\Mail\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Orboto\\Mail\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "stan": "phpstan analyse src --level=6"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Orboto\\Mail\\Laravel\\OrbotoMailServiceProvider"
+      ],
+      "aliases": {
+        "OrbotoMail": "Orboto\\Mail\\Laravel\\OrbotoMailFacade"
+      }
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "php-http/discovery": true
+    }
+  },
+  "version": "0.3.1"
+}
