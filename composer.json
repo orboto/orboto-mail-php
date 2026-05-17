@@ -13,8 +13,8 @@
   ],
   "homepage": "https://mail.orboto.io",
   "support": {
-    "issues": "https://github.com/orboto/orboto-mail-service/issues",
-    "source": "https://github.com/orboto/orboto-mail-service/tree/develop/packages/sdk-php"
+    "issues": "https://github.com/orboto/orboto-mail-php/issues",
+    "source": "https://github.com/orboto/orboto-mail-php"
   },
   "require": {
     "php": "^8.2",
