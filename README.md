@@ -26,7 +26,7 @@ $result = $mail->send([
     'html'    => '<h1>Welcome!</h1>',
 ]);
 
-echo $result->messageId;       // SES-issued message-id
+echo $result->messageId;       // server-issued message id
 echo $result->status;          // 'queued' at success-time
 echo $result->remainingQuota->percentUsed; // 0.0 .. 1.x
 ```
