@@ -33,6 +33,26 @@ echo $result->remainingQuota->percentUsed; // 0.0 .. 1.x
 
 Get an API key at [account.orboto.io/mail/api-keys](https://account.orboto.io/mail/api-keys).
 
+## Send with attachments
+
+```php
+$result = $mail->send([
+    'from'    => 'noreply@acme.orbo.to',
+    'to'      => 'user@example.com',
+    'subject' => 'Your invoice',
+    'html'    => '<p>Find your invoice attached.</p>',
+    'attachments' => [
+        [
+            'filename'    => 'invoice-2026-06.pdf',
+            'content'     => base64_encode(file_get_contents('/tmp/invoice.pdf')),
+            'contentType' => 'application/pdf',
+        ],
+    ],
+]);
+```
+
+Up to 20 attachments per send; total decoded size capped at 30 MB. Pass an optional `contentId` to reference an attachment inline from your HTML (`<img src="cid:logo-1">`).
+
 ## Send a batch
 
 ```php
