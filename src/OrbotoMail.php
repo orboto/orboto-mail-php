@@ -132,8 +132,17 @@ final class OrbotoMail
      *   subject: string,
      *   html?: string,
      *   text?: string,
-     *   tags?: array<string,string>
-     * } $input
+     *   tags?: array<string,string>,
+     *   attachments?: array<int, array{
+     *     filename: string,
+     *     content: string,
+     *     contentType: string,
+     *     contentId?: string
+     *   }>
+     * } $input  `attachments.content` is base64-encoded file bytes.
+     *           Max 20 attachments per send; total decoded size capped
+     *           at 30 MB. `attachments.contentId` enables inline
+     *           references from HTML (`<img src="cid:logo-1">`).
      *
      * @throws \Orboto\Mail\Exception\OrbotoMailException
      */
@@ -153,6 +162,10 @@ final class OrbotoMail
      * partial failures are surfaced in `$result->results`; the call as a
      * whole always returns 200. Inspect `$result->summary` + per-item
      * `ok` flag to decide whether to retry indices.
+     *
+     * Each `messages` entry accepts the same shape as `send()` plus
+     * an optional `templateId` + `variables` for per-item template
+     * rendering. `attachments` (base64-encoded) work per-message.
      *
      * @param array{messages: array<int, array<string,mixed>>} $input
      */
