@@ -65,6 +65,14 @@
     "sort-packages": true,
     "allow-plugins": {
       "php-http/discovery": true
+    },
+    "audit": {
+      "ignore": {
+        "PKSA-zwc5-qtrz-zm1n": {
+          "apply": "all",
+          "reason": "Transitive via illuminate/notifications -> illuminate/mail (dev-only dependency for the Laravel Service-Provider test surface). The Orboto SDK never instantiates illuminate/mail at runtime; it ships its own HttpClient against SES. Blocking the update would gate every PHP CI install."
+        }
+      }
     }
   },
   "version": "0.7.2"
