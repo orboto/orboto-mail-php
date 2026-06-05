@@ -38,9 +38,9 @@ use Psr\Http\Message\StreamFactoryInterface;
  *     'html'    => '<h1>Welcome!</h1>',
  *   ]);
  *
- *   // $result->messageId      — SES message-id
- *   // $result->status         — 'queued' at success-time
- *   // $result->remainingQuota — quota state AFTER this send
+ *   // $result->messageId      - SES message-id
+ *   // $result->status         - 'queued' at success-time
+ *   // $result->remainingQuota - quota state AFTER this send
  *
  *   $mail->on('quota-warning',   fn (QuotaState $q) => error_log("80%"));
  *   $mail->on('quota-low',       fn (QuotaState $q) => error_log("95%"));
@@ -129,6 +129,8 @@ final class OrbotoMail
      * @param array{
      *   from: string,
      *   to: string,
+     *   cc?: array<int, string>,
+     *   bcc?: array<int, string>,
      *   subject: string,
      *   html?: string,
      *   text?: string,
@@ -139,10 +141,13 @@ final class OrbotoMail
      *     contentType: string,
      *     contentId?: string
      *   }>
-     * } $input  `attachments.content` is base64-encoded file bytes.
-     *           Max 20 attachments per send; total decoded size capped
-     *           at 30 MB. `attachments.contentId` enables inline
-     *           references from HTML (`<img src="cid:logo-1">`).
+     * } $input  `cc` + `bcc` are arrays of email addresses; max 50 each.
+     *           `bcc` recipients receive the mail but never appear in
+     *           the MIME headers (envelope-only). `attachments.content`
+     *           is base64-encoded file bytes. Max 20 attachments per
+     *           send; total decoded size capped at 30 MB.
+     *           `attachments.contentId` enables inline references from
+     *           HTML (`<img src="cid:logo-1">`).
      *
      * @throws \Orboto\Mail\Exception\OrbotoMailException
      */
@@ -158,7 +163,7 @@ final class OrbotoMail
     }
 
     /**
-     * Send up to 100 messages in one HTTP call. Per-item processing —
+     * Send up to 100 messages in one HTTP call. Per-item processing -
      * partial failures are surfaced in `$result->results`; the call as a
      * whole always returns 200. Inspect `$result->summary` + per-item
      * `ok` flag to decide whether to retry indices.
