@@ -1,8 +1,8 @@
-# @orboto/mail — PHP SDK
+# @orboto/mail - PHP SDK
 
 Official PHP SDK for the Orboto Mail Service. Drop-in transactional-mail client with auto-quota-tracking, retry-with-backoff, quota lifecycle events, typed DTOs, and a Laravel Service-Provider out of the box. EU-hosted, GDPR-compliant.
 
-Same API surface as the TypeScript SDK [`@orboto/mail`](https://www.npmjs.com/package/@orboto/mail) — release versions stay in lockstep.
+Same API surface as the TypeScript SDK [`@orboto/mail`](https://www.npmjs.com/package/@orboto/mail) - release versions stay in lockstep.
 
 ## Install
 
@@ -32,6 +32,21 @@ echo $result->remainingQuota->percentUsed; // 0.0 .. 1.x
 ```
 
 Get an API key at [account.orboto.io/mail/api-keys](https://account.orboto.io/mail/api-keys).
+
+## Send with CC + BCC
+
+```php
+$result = $mail->send([
+    'from'    => 'support@customer.de',
+    'to'      => 'primary@example.com',
+    'cc'      => ['cc1@example.com', 'cc2@example.com'], // visible to all (max 50)
+    'bcc'     => ['silent@example.com'],                  // envelope-only (max 50)
+    'subject' => 'Quarterly report',
+    'html'    => '<p>See attached.</p>',
+]);
+```
+
+Max 50 entries each. `cc` recipients show in the recipient's headers; `bcc` recipients receive the mail but never appear in any header (envelope-only per RFC 2822). One quota decrement per call regardless of recipient count.
 
 ## Send with attachments
 
@@ -71,7 +86,7 @@ foreach ($batch->results as $item) {
 echo "{$batch->summary->queued} queued, {$batch->summary->suppressed} suppressed.";
 ```
 
-Capped at 100 messages per call. Per-item processing — the call as a whole always returns 200; inspect `$batch->summary` and per-item `ok` flags to decide whether to retry indices.
+Capped at 100 messages per call. Per-item processing - the call as a whole always returns 200; inspect `$batch->summary` and per-item `ok` flags to decide whether to retry indices.
 
 ## Templates
 
@@ -109,7 +124,7 @@ $mail->on('quota-exhausted', fn (QuotaState $q) => error_log("100%: tier cap hit
 $mail->on('connection-revoked', fn (ConnectionRevokedEvent $e) => error_log("disabled: {$e->message}"));
 ```
 
-Each threshold event fires **once per quota-reset period** — a customer who lingers at 81 % doesn't get a `quota-warning` for every send.
+Each threshold event fires **once per quota-reset period** - a customer who lingers at 81 % doesn't get a `quota-warning` for every send.
 
 ## Errors
 
@@ -124,9 +139,9 @@ use Orboto\Mail\Exception\ConnectionRevokedException;
 try {
     $mail->send([...]);
 } catch (QuotaExhaustedException $e) {
-    // Render "upgrade your plan" — $e->getRemainingQuota() has the snapshot
+    // Render "upgrade your plan" - $e->getRemainingQuota() has the snapshot
 } catch (SuppressedRecipientException $e) {
-    // Skip + log — recipient on suppression list
+    // Skip + log - recipient on suppression list
 } catch (ConnectionRevokedException $e) {
     // Disable the integration UX
 } catch (OrbotoMailException $e) {
@@ -138,7 +153,7 @@ try {
 | HTTP status | reason value | Exception |
 |---|---|---|
 | 400 | `recipient_suppressed` | `SuppressedRecipientException` |
-| 400 | `from_domain_not_authorized` | `OrbotoMailException` — add domain at [`account.orboto.io/mail/sender-domains`](https://account.orboto.io/mail/sender-domains) |
+| 400 | `from_domain_not_authorized` | `OrbotoMailException` - add domain at [`account.orboto.io/mail/sender-domains`](https://account.orboto.io/mail/sender-domains) |
 | 401 | `connection_revoked` | `ConnectionRevokedException` |
 | 402 | `base_quota` / `quota_exhausted_daily` / `overage_cap` / etc. | `QuotaExhaustedException` |
 | 502 / 503 / 504 | any | `OrbotoMailException` (auto-retried with backoff) |
@@ -168,7 +183,7 @@ Environment variables (used when the corresponding option is omitted):
 
 ## HTTP client
 
-The SDK uses PSR-18 + PSR-17. By default it auto-discovers an installed client via `php-http/discovery`. If you have Guzzle installed (`composer require guzzlehttp/guzzle`) it picks Guzzle. If you prefer Symfony's HTTP client or anything else PSR-18-compatible, install that package and discovery routes to it — or inject explicitly via the `httpClient` / `requestFactory` / `streamFactory` options.
+The SDK uses PSR-18 + PSR-17. By default it auto-discovers an installed client via `php-http/discovery`. If you have Guzzle installed (`composer require guzzlehttp/guzzle`) it picks Guzzle. If you prefer Symfony's HTTP client or anything else PSR-18-compatible, install that package and discovery routes to it - or inject explicitly via the `httpClient` / `requestFactory` / `streamFactory` options.
 
 ## Laravel
 
@@ -237,7 +252,7 @@ Full DTO list in `src/Dto/`. Every type is a `readonly` class with a `fromArray(
 
 ## Versioning
 
-Releases stay in lockstep with the TypeScript SDK and the API backend — same `vX.Y.Z` tag bumps `@orboto/mail` (npm) + `orboto/mail` (Packagist) + the API container together. Patch releases are pure bug-fix / docs; minor releases add API surface; major releases imply a breaking change to the public method signatures (none yet).
+Releases stay in lockstep with the TypeScript SDK and the API backend - same `vX.Y.Z` tag bumps `@orboto/mail` (npm) + `orboto/mail` (Packagist) + the API container together. Patch releases are pure bug-fix / docs; minor releases add API surface; major releases imply a breaking change to the public method signatures (none yet).
 
 ## License
 
