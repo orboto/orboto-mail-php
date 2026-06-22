@@ -9,8 +9,10 @@ use Orboto\Mail\Dto\ConnectionRevokedEvent;
 use Orboto\Mail\Dto\QuotaState;
 use Orboto\Mail\Exception\ConnectionRevokedException;
 use Orboto\Mail\Exception\OrbotoMailException;
+use Orboto\Mail\Exception\PaymentRequiredException;
 use Orboto\Mail\Exception\QuotaExhaustedException;
 use Orboto\Mail\Exception\SuppressedRecipientException;
+use Orboto\Mail\Exception\WalletUnavailableException;
 use Orboto\Mail\OrbotoMail;
 use Orboto\Mail\Tests\Support\FakeHttpClient;
 use PHPUnit\Framework\TestCase;
@@ -109,6 +111,56 @@ final class OrbotoMailTest extends TestCase
             $this->assertSame('base_quota', $e->getReason());
             $this->assertNotNull($e->getRemainingQuota());
             $this->assertSame(1.0, $e->getRemainingQuota()->percentUsed);
+        }
+    }
+
+    public function test_402_payment_required_becomes_payment_required_exception(): void
+    {
+        $fake = new FakeHttpClient();
+        $fake->queue(402, [
+            'error' => 'payment_required',
+            'reason' => 'payment_required',
+            'message' => 'Wallet balance too low to cover overage',
+            'remainingQuota' => self::quotaPayload(1.0),
+        ]);
+
+        try {
+            $this->mail($fake)->send([
+                'from' => 'a@b.com',
+                'to' => 'c@d.com',
+                'subject' => 'over',
+                'text' => 'over',
+            ]);
+            $this->fail('expected PaymentRequiredException');
+        } catch (PaymentRequiredException $e) {
+            $this->assertSame(402, $e->getStatusCode());
+            $this->assertSame('payment_required', $e->getReason());
+            $this->assertFalse($e->isRetryable());
+            $this->assertNotNull($e->getRemainingQuota());
+        }
+    }
+
+    public function test_503_wallet_unavailable_becomes_wallet_unavailable_exception(): void
+    {
+        $fake = new FakeHttpClient();
+        $fake->queue(503, [
+            'error' => 'wallet_unavailable',
+            'reason' => 'wallet_unavailable',
+            'message' => 'Overage billing temporarily unavailable',
+        ]);
+
+        try {
+            $this->mail($fake)->send([
+                'from' => 'a@b.com',
+                'to' => 'c@d.com',
+                'subject' => 'over',
+                'text' => 'over',
+            ]);
+            $this->fail('expected WalletUnavailableException');
+        } catch (WalletUnavailableException $e) {
+            $this->assertSame(503, $e->getStatusCode());
+            $this->assertSame('wallet_unavailable', $e->getReason());
+            $this->assertTrue($e->isRetryable());
         }
     }
 

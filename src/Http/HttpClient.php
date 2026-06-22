@@ -9,8 +9,10 @@ use Http\Discovery\Psr18ClientDiscovery;
 use Orboto\Mail\Dto\QuotaState;
 use Orboto\Mail\Exception\ConnectionRevokedException;
 use Orboto\Mail\Exception\OrbotoMailException;
+use Orboto\Mail\Exception\PaymentRequiredException;
 use Orboto\Mail\Exception\QuotaExhaustedException;
 use Orboto\Mail\Exception\SuppressedRecipientException;
+use Orboto\Mail\Exception\WalletUnavailableException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -127,6 +129,13 @@ final class HttpClient
                     throw new ConnectionRevokedException($status, $message, $reason, $remainingQuota, $retryAfterMs, $errBody);
                 }
 
+                // OMS-98 - wallet-gated overage: 402 payment_required is
+                // distinct from a plain quota_exhausted (the subscription
+                // quota is gone AND the wallet is empty).
+                if ($status === 402 && $reason === 'payment_required') {
+                    throw new PaymentRequiredException($status, $message, $reason, $remainingQuota, $retryAfterMs, $errBody);
+                }
+
                 if ($status === 402) {
                     throw new QuotaExhaustedException($status, $message, $reason, $remainingQuota, $retryAfterMs, $errBody);
                 }
@@ -135,7 +144,12 @@ final class HttpClient
                     throw new SuppressedRecipientException($status, $message, $reason, $remainingQuota, $retryAfterMs, $errBody);
                 }
 
-                $sdkException = new OrbotoMailException($status, $message, $reason, $remainingQuota, $retryAfterMs, $errBody);
+                // OMS-98 - 503 wallet_unavailable stays in the generic
+                // (retryable) path; construct the specific class so a
+                // retry-exhausted failure surfaces as WalletUnavailableException.
+                $sdkException = ($status === 503 && $reason === 'wallet_unavailable')
+                    ? new WalletUnavailableException($status, $message, $reason, $remainingQuota, $retryAfterMs, $errBody)
+                    : new OrbotoMailException($status, $message, $reason, $remainingQuota, $retryAfterMs, $errBody);
 
                 if ($sdkException->isRetryable() && $attempt < $this->maxRetries) {
                     $lastError = $sdkException;

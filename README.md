@@ -133,11 +133,17 @@ Every non-2xx response surfaces as a typed exception:
 ```php
 use Orboto\Mail\Exception\OrbotoMailException;
 use Orboto\Mail\Exception\QuotaExhaustedException;
+use Orboto\Mail\Exception\PaymentRequiredException;
+use Orboto\Mail\Exception\WalletUnavailableException;
 use Orboto\Mail\Exception\SuppressedRecipientException;
 use Orboto\Mail\Exception\ConnectionRevokedException;
 
 try {
     $mail->send([...]);
+} catch (PaymentRequiredException $e) {
+    // Monthly quota used up + wallet balance too low - prompt a top-up
+} catch (WalletUnavailableException $e) {
+    // Transient billing outage; send NOT dispatched - retry shortly
 } catch (QuotaExhaustedException $e) {
     // Render "upgrade your plan" - $e->getRemainingQuota() has the snapshot
 } catch (SuppressedRecipientException $e) {
@@ -150,13 +156,24 @@ try {
 }
 ```
 
+> **Overage billing (wallet).** Once the monthly included quota is used up,
+> above-quota sends draw on the account wallet. A successful overage send
+> returns `overage = true`; an empty wallet throws `PaymentRequiredException`
+> (402) and a brief billing outage throws `WalletUnavailableException` (503,
+> fail-closed - the send is not dispatched). Both extend
+> `OrbotoMailException`. Catch the specific classes BEFORE
+> `QuotaExhaustedException` / `OrbotoMailException` (PHP matches the first
+> compatible `catch`).
+
 | HTTP status | reason value | Exception |
 |---|---|---|
 | 400 | `recipient_suppressed` | `SuppressedRecipientException` |
 | 400 | `from_domain_not_authorized` | `OrbotoMailException` - add domain at [`account.orboto.io/mail/sender-domains`](https://account.orboto.io/mail/sender-domains) |
 | 401 | `connection_revoked` | `ConnectionRevokedException` |
-| 402 | `base_quota` / `quota_exhausted_daily` / `overage_cap` / etc. | `QuotaExhaustedException` |
-| 502 / 503 / 504 | any | `OrbotoMailException` (auto-retried with backoff) |
+| 402 | `payment_required` | `PaymentRequiredException` - top up at [`account.orboto.io/mail/billing`](https://account.orboto.io/mail/billing) |
+| 402 | `base_quota` / `quota_exhausted_daily` / etc. | `QuotaExhaustedException` |
+| 503 | `wallet_unavailable` | `WalletUnavailableException` (auto-retried first) |
+| 502 / 503 / 504 | any other | `OrbotoMailException` (auto-retried with backoff) |
 
 ## Configuration
 
