@@ -12,6 +12,7 @@ use Orboto\Mail\Dto\SendResult;
 use Orboto\Mail\Http\HttpClient;
 use Orboto\Mail\Http\QuotaEmitter;
 use Orboto\Mail\Resource\ApiKeysResource;
+use Orboto\Mail\Resource\DmarcResource;
 use Orboto\Mail\Resource\InboundResource;
 use Orboto\Mail\Resource\SendsResource;
 use Orboto\Mail\Resource\SenderDomainsResource;
@@ -67,6 +68,7 @@ final class OrbotoMail
     public readonly InboundResource $inbound;
     public readonly SenderDomainsResource $senderDomains;
     public readonly ApiKeysResource $apiKeys;
+    public readonly DmarcResource $dmarc;
 
     /**
      * @param array{
@@ -121,6 +123,7 @@ final class OrbotoMail
         $this->inbound = new InboundResource($this->http);
         $this->senderDomains = new SenderDomainsResource($this->http);
         $this->apiKeys = new ApiKeysResource($this->http);
+        $this->dmarc = new DmarcResource($this->http);
     }
 
     /**

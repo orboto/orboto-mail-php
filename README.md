@@ -126,6 +126,23 @@ $mail->sendTemplate([
 ]);
 ```
 
+## DMARC reports
+
+Once your domain's DMARC record points its `rua=` at orboto, receivers (Gmail, Outlook, Yahoo, ...) send daily aggregate reports that orboto parses for you.
+
+```php
+$summary = $mail->dmarc->summary('acme.example.com', '30d'); // '7d' | '30d' | '90d'
+if ($summary['summary'] === null) {
+    // nothing received yet - reports take 24-48h to start arriving
+}
+$rate = $summary['summary']['authPassRate'];            // 0..1
+$ips  = $mail->dmarc->sourceIps('acme.example.com');     // who sends as you, and whether they align
+$page = $mail->dmarc->reports('acme.example.com', ['limit' => 20]);
+$one  = $mail->dmarc->report($page['reports'][0]['id']); // envelope + per-IP records
+```
+
+A domain you do not own answers 404 `domain_not_found`.
+
 ## Quota lifecycle events
 
 ```php

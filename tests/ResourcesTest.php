@@ -118,6 +118,21 @@ final class ResourcesTest extends TestCase
         $this->assertSame(64, strlen($webhook->secret));
     }
 
+    public function test_dmarc_summary_and_source_ips_hit_the_scoped_paths(): void
+    {
+        $fake = new FakeHttpClient();
+        $fake->queue(200, ['domain' => 'acme.example.com', 'period' => '7d', 'totalReports' => 0, 'summary' => null]);
+        $fake->queue(200, ['domain' => 'acme.example.com', 'period' => '30d', 'sourceIps' => [], 'nextCursor' => null]);
+        $mail = $this->mail($fake);
+        $summary = $mail->dmarc->summary('acme.example.com', '7d');
+        $this->assertSame(0, $summary['totalReports']);
+        $this->assertNull($summary['summary']);
+        $ips = $mail->dmarc->sourceIps('acme.example.com', ['limit' => 5]);
+        $this->assertSame([], $ips['sourceIps']);
+        $this->assertStringContainsString('/v1/dmarc/domains/acme.example.com/summary?period=7d', (string) $fake->requests[0]->getUri());
+        $this->assertStringContainsString('/v1/dmarc/domains/acme.example.com/source-ips?limit=5', (string) $fake->requests[1]->getUri());
+    }
+
     public function test_sends_list_passes_filters_as_query_params(): void
     {
         $fake = new FakeHttpClient();
