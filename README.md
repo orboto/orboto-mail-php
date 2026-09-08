@@ -143,6 +143,16 @@ $one  = $mail->dmarc->report($page['reports'][0]['id']); // envelope + per-IP re
 
 A domain you do not own answers 404 `domain_not_found`.
 
+Daily anomaly alerts are opt-in per domain (off by default):
+
+```php
+$mail->dmarc->setAlerts('acme.example.com', ['notifyEmail' => 'ops@acme.example.com']);
+// -> `dmarc.anomaly` webhook event + a plain-text mail when the pass rate drops >10 pp week over week,
+//    a new IP sends >100 messages in a day, or rejects jump to >5x the 30-day median
+$mail->dmarc->alerts('acme.example.com');         // ['enabled' => true, 'notifyEmail' => ..., ...]
+$mail->dmarc->disableAlerts('acme.example.com');
+```
+
 ## Quota lifecycle events
 
 ```php

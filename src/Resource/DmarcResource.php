@@ -97,4 +97,44 @@ final class DmarcResource
             'nextCursor' => $response['nextCursor'] ?? null,
         ];
     }
+
+    /**
+     * Current anomaly-alert opt-in state (off until enabled).
+     *
+     * @return array{domain: string, enabled: bool, notifyEmail: ?string, lastAlertAt: ?string, updatedAt: ?string}
+     */
+    public function alerts(string $domain): array
+    {
+        return $this->http->request('GET', '/v1/dmarc/domains/' . rawurlencode($domain) . '/alerts') ?? [];
+    }
+
+    /**
+     * Enable (default) or update the daily anomaly check. Findings arrive
+     * as the `dmarc.anomaly` webhook event and, with `notifyEmail`, as mail.
+     * `notifyEmail => null` clears the address; `enabled => false` pauses.
+     *
+     * @param array{enabled?: bool, notifyEmail?: ?string} $options
+     * @return array{domain: string, enabled: bool, notifyEmail: ?string, lastAlertAt: ?string, updatedAt: ?string}
+     */
+    public function setAlerts(string $domain, array $options = []): array
+    {
+        $body = [];
+        if (array_key_exists('enabled', $options)) {
+            $body['enabled'] = $options['enabled'];
+        }
+        if (array_key_exists('notifyEmail', $options)) {
+            $body['notifyEmail'] = $options['notifyEmail'];
+        }
+        return $this->http->request('POST', '/v1/dmarc/domains/' . rawurlencode($domain) . '/alerts', $body) ?? [];
+    }
+
+    /**
+     * Remove the opt-in entirely.
+     *
+     * @return array{domain: string, enabled: bool, notifyEmail: ?string, lastAlertAt: ?string, updatedAt: ?string}
+     */
+    public function disableAlerts(string $domain): array
+    {
+        return $this->http->request('DELETE', '/v1/dmarc/domains/' . rawurlencode($domain) . '/alerts') ?? [];
+    }
 }
