@@ -131,6 +131,7 @@ final class OrbotoMail
      *   to: string,
      *   cc?: array<int, string>,
      *   bcc?: array<int, string>,
+     *   replyTo?: string,
      *   subject: string,
      *   html?: string,
      *   text?: string,
@@ -142,6 +143,8 @@ final class OrbotoMail
      *     contentId?: string
      *   }>
      * } $input  `cc` + `bcc` are arrays of email addresses; max 50 each.
+     *           `replyTo` is a single RFC-5322 mailbox (any domain) that
+     *           replies go to instead of `from`.
      *           `bcc` recipients receive the mail but never appear in
      *           the MIME headers (envelope-only). `attachments.content`
      *           is base64-encoded file bytes. Max 20 attachments per

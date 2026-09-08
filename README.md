@@ -48,6 +48,20 @@ $result = $mail->send([
 
 Max 50 entries each. `cc` recipients show in the recipient's headers; `bcc` recipients receive the mail but never appear in any header (envelope-only per RFC 2822). One quota decrement per call regardless of recipient count.
 
+## Send with a Reply-To
+
+```php
+$result = $mail->send([
+    'from'    => 'noreply@customer.de',
+    'to'      => 'primary@example.com',
+    'replyTo' => 'Customer Support <support@customer.de>', // replies land here, not at noreply@
+    'subject' => 'Your order shipped',
+    'text'    => 'Reply to this mail if anything is off.',
+]);
+```
+
+`replyTo` is a single RFC-5322 mailbox; it does not have to be on one of your verified domains.
+
 ## Send with attachments
 
 ```php
