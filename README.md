@@ -211,6 +211,7 @@ try {
 | 400 | `recipient_suppressed` | `SuppressedRecipientException` |
 | 400 | `from_domain_not_authorized` | `OrbotoMailException` - add domain at [`account.orboto.io/mail/sender-domains`](https://account.orboto.io/mail/sender-domains) |
 | 401 | `connection_revoked` | `ConnectionRevokedException` |
+| 403 | `insufficient_scope` | `OrbotoMailException` - the key is read-only (read-stats connection) and may only read the quota |
 | 402 | `payment_required` | `PaymentRequiredException` - top up at [`account.orboto.io/mail/billing`](https://account.orboto.io/mail/billing) |
 | 402 | `base_quota` / `quota_exhausted_daily` / etc. | `QuotaExhaustedException` |
 | 503 | `wallet_unavailable` | `WalletUnavailableException` (auto-retried first) |
